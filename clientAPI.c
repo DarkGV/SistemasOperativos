@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
-#include <stdio.h>
 
 typedef struct{
 	char* filename;
