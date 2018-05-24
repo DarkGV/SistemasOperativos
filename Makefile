@@ -14,4 +14,4 @@ logserver : $(OBS)
 clean limpar:
 	rm -f logserver *.o
 	rm -f *~
-	echo "Limpeza dos ficheiros exectuaveis, objectos e gedit tralha"
+	echo "Cleaning trash"
