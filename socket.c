@@ -7,7 +7,7 @@ int run = 0;
 
 int handle_client(int handler){
     int cliSock = handler;
-    char fileSize[MAXBUFFERSIZE], *file;
+    char fileSize[1], *file;
     int nBytes = 0, size = 0;
     printf("Receiving data...\n");
 

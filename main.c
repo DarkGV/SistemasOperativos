@@ -5,14 +5,16 @@
 *
 */
 
+
 #include "link.h"
 
 int main()
 {
     pthread_t thread;
     pthread_create(&thread, NULL, create_listener, NULL);
-    while(!run){
-        printf("Thread is running");
-        sleep(1000);
+    while(1){
+        if(received){
+            received = 0;
+        }
     }
 }

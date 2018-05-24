@@ -7,6 +7,14 @@
 #include <stdint.h>
 #include <unistd.h>
 
-extern int run;
+extern int received;
 
+typedef struct{
+    pid_t PID;
+    char* Name;
+}THREAD;
+/*
+* estrutura com o nome do ficheiro
+* recebido.log
+*/
 void* create_listener();
