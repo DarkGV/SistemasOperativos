@@ -26,10 +26,3 @@ LoggingData* readFileInfo(char* filename){
 	strftime(ldp->dt, 10, "%c", localtime(&t));
 	int fd = open(filename, O_RDONLY);	
 }
-
-int main(){
-	time_t t = time(NULL);
-	char datetime[10];
-	strftime(datetime, 10, "%c", localtime(&t));
-	printf("%s", datetime);
-}
