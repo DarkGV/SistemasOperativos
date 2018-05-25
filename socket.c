@@ -7,30 +7,31 @@ int received = 0;
 
 int handle_client(int handler, char* address){
     struct hostent *hp = gethostbyname(address);
-    int cliSock = handler;
-    char fileSize[MAXBUFFERSIZE], *file;
+    int cliSock = handler, fd;
+    char fileSize[MAXBUFFERSIZE], *fileName;
     int nBytes = 0, size = 0;
     printf("Conected to %s\n", hp->h_name);
     printf("Receiving data...\n");
 
-    /*Receive file size*/
-    if(recv(cliSock, fileSize, 1, 0) < 0){
+    if(sprintf(fileName, "Received%d", received) < 0) return -1;
+    fd = creat(fileName, S_IRUSR | S_IWUSR);
+
+    /*
+    *           Receive file size
+    *           Not using this value..
+    */
+    if(recv(cliSock, fileSize, MAXBUFFERSIZE, 0) < 0){
         printf("Error receiving file size\n");
         return -1;
     }
-
-    /*Alloc file size*/
-    size = atoi(&fileSize[0]);
-    file = (char*)malloc(size * sizeof(char));
-
+    memset(fileSize, 0, sizeof(fileSize));
     /*Receive file*/
     while((nBytes = recv(cliSock, fileSize, MAXBUFFERSIZE, 0)) > 0){
-        file = strcat(file, fileSize);
-        size -= nBytes;
-        printf("Received %d%%\n", nBytes*100/size);
+        if(write(fd, fileSize, nBytes) < 0) return -1;
+        memset(fileSize, 0, sizeof(fileSize));
     }
     if(nBytes < 0) printf("Error receiving file\n");
-    else received = 1;
+    else received++;
     close(cliSock);
     return 0;
 }

@@ -7,6 +7,9 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <netdb.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <time.h>
 
 extern int received;
 
