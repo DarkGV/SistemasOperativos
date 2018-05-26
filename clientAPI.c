@@ -10,7 +10,7 @@
 
 #define MAXBUFFSIZE 1024
 
-int startCommunication(char* addr, int port){
+int startCommunication(){
 
 	int s = socket(PF_INET, SOCK_STREAM, 0);
 	struct sockaddr_in svAddr;
