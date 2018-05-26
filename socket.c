@@ -3,7 +3,7 @@
 #define MAXLEN 25
 #define MAXBUFFERSIZE 1024
 
-int received = 0;
+int received;
 
 int handle_client(int handler, char* address){
     struct hostent *hp = gethostbyname(address);
@@ -26,12 +26,16 @@ int handle_client(int handler, char* address){
     }
     memset(fileSize, 0, sizeof(fileSize));
     /*Receive file*/
+    //printf("Hey im receiving something...\n");
     while((nBytes = recv(cliSock, fileSize, MAXBUFFERSIZE, 0)) > 0){
+        //printf("Ptztzt isto e' o ficheiro: %s \n",fileSize);
         if(write(fd, fileSize, nBytes) < 0) return -1;
         memset(fileSize, 0, sizeof(fileSize));
     }
+    printf("Primeiro%d\n", received);
     if(nBytes < 0) printf("Error receiving file\n");
     else received++;
+    printf("%d\n", received);
     close(cliSock);
     return 0;
 }
@@ -42,7 +46,6 @@ void* create_listener(){
     int sock, cliSock;
     struct sockaddr_in svAddr, cliAddr;
     socklen_t clilen;
-
     sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     if(sock < 0){
@@ -55,7 +58,7 @@ void* create_listener(){
 
     svAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     svAddr.sin_family = AF_INET;
-    svAddr.sin_port = htons(1024);
+    svAddr.sin_port = htons(1234);
 
     if(bind(sock, (struct sockaddr*) &svAddr, sizeof(svAddr)) < 0){
         printf("Error binding socket...\n");
