@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define MAXBUFFSIZE 1024
+
 int startCommunication(){
 
 	int s = socket(PF_INET, SOCK_STREAM, 0);
@@ -24,7 +26,8 @@ int startCommunication(){
 
 int sendFileTo(int communication, char* filename){
 	struct stat fStat;
-	char fileSize[1024];
+	char fileSize[MAXBUFFSIZE];
+	int nBytes, offset;
 	int fd = open(filename, O_RDONLY);
 	if(fstat(fd, &fStat) < 0) return -1;
 
@@ -32,6 +35,12 @@ int sendFileTo(int communication, char* filename){
 	sprintf(fileSize, "%lld", fStat.st_size);
 	if(send(communication, fileSize, sizeof(fileSize), 0) < 0){
 		return -1;
+	}
+
+	memset(fileSize, 0, sizeof(fileSize));
+	while((nBytes = read(fd, fileSize, MAXBUFFSIZE)) > 0){
+		if(send(communication, fileSize, nBytes, 0) < 0) return -1;
+		memset(fileSize, 0, sizeof(fileSize));
 	}
 
 	return 0;
