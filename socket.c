@@ -8,12 +8,12 @@ int received = 0;
 int handle_client(int handler, char* address){
     struct hostent *hp = gethostbyname(address);
     int cliSock = handler, fd;
-    char fileSize[MAXBUFFERSIZE], *fileName;
-    int nBytes = 0, size = 0;
+    char fileSize[MAXBUFFERSIZE], *fileName = (char*)malloc(14*sizeof(char));
+    int nBytes = 0;
     printf("Conected to %s\n", hp->h_name);
     printf("Receiving data...\n");
 
-    if(sprintf(fileName, "Received%d", received) < 0) return -1;
+    if(sprintf(fileName, "Received%d.log", received) < 0) return -1;
     fd = creat(fileName, S_IRUSR | S_IWUSR);
 
     /*

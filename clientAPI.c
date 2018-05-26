@@ -16,7 +16,7 @@ int startCommunication(){
 	struct sockaddr_in svAddr;
 
 	memset(&svAddr, 0, sizeof(svAddr));
-	svAddr.sin_addr.s_addr = inet_addr("192.168.1.4");
+	svAddr.sin_addr.s_addr = inet_addr("192.168.1.66");
 	svAddr.sin_family = AF_INET;
 	svAddr.sin_port = htons(1024);
 
@@ -27,7 +27,7 @@ int startCommunication(){
 int sendFileTo(int communication, char* filename){
 	struct stat fStat;
 	char fileSize[MAXBUFFSIZE];
-	int nBytes, offset;
+	int nBytes;
 	int fd = open(filename, O_RDONLY);
 	if(fstat(fd, &fStat) < 0) return -1;
 
