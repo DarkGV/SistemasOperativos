@@ -6,8 +6,6 @@
 */
 #include "link.h"
 
-int received = 0;
-
 int main()
 {
     pthread_t thread;
