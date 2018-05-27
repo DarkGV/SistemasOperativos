@@ -37,7 +37,7 @@ int handle_client(int handler, char* address){
 }
 
 void* create_listener(){
-    int* flagRecv = mmap(NULL, sizeof(int), PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+    int* flagRecv = mmap(NULL, sizeof(int), PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0)
     pid_t PID;
     int sock, cliSock;
     struct sockaddr_in svAddr, cliAddr;
