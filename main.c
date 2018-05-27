@@ -10,12 +10,11 @@
 
 int main()
 {
+    received = 0;
     pthread_t thread;
     pthread_create(&thread, NULL, create_listener, NULL);
     while(1){
-        if(received){
-            received = 0;
-        }
+        /*if(received > 0) printf("Received: %d\n", received);*/
     }
 
 }

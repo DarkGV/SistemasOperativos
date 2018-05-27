@@ -10,13 +10,14 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
-
-extern int received;
+#include <sys/mman.h>
 
 typedef struct{
     pid_t PID;
     char* Name;
 }THREAD;
+
+extern int received;
 
 /*
 * estrutura com o nome do ficheiro
