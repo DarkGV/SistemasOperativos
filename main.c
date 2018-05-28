@@ -13,12 +13,10 @@ int main()
     int status, fd;
     
     while(1){
-    	printf("OLA?\n");
     	status = (rand() % 11);
-        while(received > 0){
-        	fd = open ("Received%d.log",received ,O_RDONLY);
-        	printf("%d\n", received);
-            received--;
+        if(received > 0){
+            fd = open ("Received%d.log",received-1 ,O_RDONLY);
+            printf("Opening file: Received%d.log\n", received);
         }
         sleep(status);
     }
