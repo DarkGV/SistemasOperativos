@@ -4,6 +4,7 @@
 #define MAXBUFFERSIZE 1024
 
 int received;
+static int* files;
 
 int handle_client(int handler, char* address){
     /*struct hostent *hp = gethostbyname(address);*/
@@ -13,7 +14,7 @@ int handle_client(int handler, char* address){
     /*printf("Conected to %s\n", hp->h_name);
     printf("Receiving data...\n");*/
 
-    if(sprintf(fileName, "Received%d.log", received) < 0) return -1;
+    if(sprintf(fileName, "Received%d.log", *files) < 0) return -1;
     fd = creat(fileName, S_IRUSR | S_IWUSR);
 
     /*
@@ -37,7 +38,6 @@ int handle_client(int handler, char* address){
 }
 
 void* create_listener(){
-    int* flagRecv = mmap(NULL, sizeof(int), PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
     pid_t PID;
     int sock, cliSock;
     struct sockaddr_in svAddr, cliAddr;
@@ -65,28 +65,24 @@ void* create_listener(){
         printf("Error listening socket...\n");
         exit(-1);
     }
-
+    files = mmap(NULL, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED| MAP_ANONYMOUS, -1, 0);
     for(;;){
         clilen = sizeof(cliAddr);
         cliSock = accept(sock, (struct sockaddr*)&cliAddr, &clilen);
         /*Let's see if everythings fine!*/
         if(cliSock > 0){
-            
             PID = fork();
             if(PID == 0){
                 close(sock);
-                handle_client(cliSock, inet_ntoa(cliAddr.sin_addr));
-                if(received>0) {
-                    received--;
-                    *flagRecv += 1;
+                if(!handle_client(cliSock, inet_ntoa(cliAddr.sin_addr))) 
+                {
+                    *files += 1;
                 }
                 exit(0);
             }
+
+            received = *files;
             close(cliSock);
-        }
-        if(*flagRecv > 0) {
-            *flagRecv -= 1;
-            received++;
         }
     }
 }

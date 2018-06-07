@@ -11,11 +11,15 @@
 #include <fcntl.h>
 #include <time.h>
 #include <sys/mman.h>
+#include <sys/shm.h>
 
 typedef struct{
     pid_t PID;
     char* Name;
 }THREAD;
+
+/*fd = open ("Received%d.log",received-1 ,O_RDONLY);
+            printf("Opening file: Received%d.log\n", received);*/
 
 extern int received;
 
