@@ -7,8 +7,44 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <string.h>
+//#include <openssl/aes.h>
+#include "clientAPI.h"
 
 #define MAXBUFFSIZE 1024
+
+int createLogFile(char* logName ,char* data, int logLevel){
+	time_t now;
+	struct tm* timeInfo;
+	int fd = creat(logName, S_IRWXU);
+
+	LogFile myLog;
+
+	myLog.pid = getppid();
+	char buffer[1024];
+	sprintf(buffer, "%d\n", myLog.pid);
+	if(write(fd, buffer, strlen(buffer)) < 0) return -1;
+
+	myLog.program_name = &(getenv("_"))[2];
+	sprintf(buffer, "%s\n", myLog.program_name);
+	if(write(fd, buffer, strlen(buffer)) < 0) return -1;
+
+	time(&now);
+	timeInfo = localtime(&now);
+	myLog.date = asctime(timeInfo);
+	sprintf(buffer, "%s", myLog.date);
+	if(write(fd, buffer, strlen(buffer)) < 0) return -1;
+
+	myLog.level = logLevel;
+	sprintf(buffer, "%d\n", myLog.level);
+	if(write(fd, buffer, strlen(buffer)) < 0) return -1;
+
+	myLog.Data = data;
+	sprintf(buffer, "%s\n", myLog.Data);
+	if(write(fd, buffer, strlen(buffer)) < 0) return -1;
+
+	close(fd);
+	return 0;
+}
 
 int startCommunication(char* addr){
 

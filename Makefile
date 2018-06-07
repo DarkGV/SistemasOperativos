@@ -1,6 +1,6 @@
 CC=cc
 FLAGS=-c -Wall
-LIBS=-lm -lpthread 
+LIBS=-lm -lpthread -lcrypto -lssl
 OBS=main.o socket.o clientAPI.o
 
 all :  logserver

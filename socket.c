@@ -37,7 +37,7 @@ int handle_client(int handler, char* address){
     return 0;
 }
 
-void* create_listener(){
+void* create_listener(void*args) {
     pid_t PID;
     int sock, cliSock;
     struct sockaddr_in svAddr, cliAddr;

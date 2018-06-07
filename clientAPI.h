@@ -2,6 +2,22 @@
 #define _CLIENTAPI_H_
 #endif
 
+typedef struct{
+    int pid;
+    char* program_name;
+    char* date;
+    int level;
+    /*
+    *       0 - ALL             1 - DEBUG
+    *       2 - ERROR           3 - FATAL
+    *       4 - INFO            5 - OFF
+    *       6 - TRACE           7 - WARN
+    */
+    int SessionNumber;
+    int ssN;
+    char* Data;
+}LogFile;
+
 /*
 * startComunication(char* address)
 * address - de server address which client will communicate.
@@ -27,3 +43,5 @@ extern int sendFileTo(int, char*);
 *0 if no errors, the socket descriptor if error occurs
 */
 extern int endCommunication(int);
+
+extern int createLogFile(char* logName ,char* data, int logLevel);
