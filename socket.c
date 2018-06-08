@@ -14,8 +14,6 @@ void* handle_client(void*args){
     char fileSize[MAXBUFFERSIZE], *fileName = (char*)malloc(14*sizeof(char));
     int nBytes = 0;
 
-    printf("")
-
     if(sprintf(fileName, "Received%d.log", received) < 0){
         pthread_mutex_unlock(&lock);
         exit(-1);

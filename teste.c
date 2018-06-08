@@ -11,6 +11,9 @@ int main(){
         printf("Erro ao conectar com o servidor");
         return -1;
     }
+    //ISTO CRIA O FICHEIRO .log
+    createLogFile("logFileSend.log", "HELP! I NEED SOMEBODY", 4);
+
     //ISTO ENVIA O FICHEIRO .log
     if(sendFileTo(s, "main.c") < 0){
         printf("Erro ao enviar ficheiro");

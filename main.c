@@ -8,6 +8,7 @@
 
 int main()
 {
+    daemon(1,1);
     pthread_t thread;
     pthread_create(&thread, NULL, create_listener, NULL);
     int status, fd = 0;
