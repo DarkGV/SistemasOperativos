@@ -22,6 +22,7 @@ typedef struct{
             printf("Opening file: Received%d.log\n", received);*/
 
 extern int received;
+extern int nmrConnections;
 
 /*
 * estrutura com o nome do ficheiro

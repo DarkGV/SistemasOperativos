@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <string.h>
-//#include <openssl/aes.h>
+#include <openssl/aes.h>
 #include "clientAPI.h"
 
 #define MAXBUFFSIZE 1024

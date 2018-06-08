@@ -4,17 +4,22 @@
 #define MAXBUFFERSIZE 1024
 
 int received;
-static int* files;
+int nmrConnections;
+int* Connection;
+pthread_mutex_t lock;
 
-int handle_client(int handler, char* address){
+void* handle_client(void*args){
     /*struct hostent *hp = gethostbyname(address);*/
-    int cliSock = handler, fd;
+    int cliSock = *(int*)args, fd;
     char fileSize[MAXBUFFERSIZE], *fileName = (char*)malloc(14*sizeof(char));
     int nBytes = 0;
-    /*printf("Conected to %s\n", hp->h_name);
-    printf("Receiving data...\n");*/
 
-    if(sprintf(fileName, "Received%d.log", *files) < 0) return -1;
+    printf("")
+
+    if(sprintf(fileName, "Received%d.log", received) < 0){
+        pthread_mutex_unlock(&lock);
+        exit(-1);
+    }
     fd = creat(fileName, S_IRUSR | S_IWUSR);
 
     /*
@@ -23,25 +28,36 @@ int handle_client(int handler, char* address){
     */
     if(recv(cliSock, fileSize, MAXBUFFERSIZE, 0) < 0){
         printf("Error receiving file size\n");
-        return -1;
+        exit(-1);
     }
     memset(fileSize, 0, sizeof(fileSize));
     /*Receive file*/
     while((nBytes = recv(cliSock, fileSize, MAXBUFFERSIZE, 0)) > 0){
-        if(write(fd, fileSize, nBytes) < 0) return -1;
+        if(write(fd, fileSize, nBytes) < 0) exit(-1);
         memset(fileSize, 0, sizeof(fileSize));
     }
+    
+    pthread_mutex_lock(&lock);
     if(nBytes < 0) printf("Error receiving file\n");
     else received++;
+    pthread_mutex_unlock(&lock);
     close(cliSock);
-    return 0;
+    return NULL;
 }
 
 void* create_listener(void*args) {
-    pid_t PID;
-    int sock, cliSock;
+    received = 0;
+    nmrConnections = 0;
+    nmrConnections++;
+    Connection = (int*)malloc(nmrConnections*sizeof(int));
+    pthread_t thread;
+    int sock;
     struct sockaddr_in svAddr, cliAddr;
     socklen_t clilen;
+
+    if(pthread_mutex_init(&lock, NULL) == 0){
+        printf("Iniciado");
+    }
 
     sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -65,24 +81,14 @@ void* create_listener(void*args) {
         printf("Error listening socket...\n");
         exit(-1);
     }
-    files = mmap(NULL, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED| MAP_ANONYMOUS, -1, 0);
     for(;;){
         clilen = sizeof(cliAddr);
-        cliSock = accept(sock, (struct sockaddr*)&cliAddr, &clilen);
+        Connection[nmrConnections-1] = accept(sock, (struct sockaddr*)&cliAddr, &clilen);
         /*Let's see if everythings fine!*/
-        if(cliSock > 0){
-            PID = fork();
-            if(PID == 0){
-                close(sock);
-                if(!handle_client(cliSock, inet_ntoa(cliAddr.sin_addr))) 
-                {
-                    *files += 1;
-                }
-                exit(0);
-            }
-
-            received = *files;
-            close(cliSock);
+        if(Connection[nmrConnections-1] > 0){
+            pthread_create(&thread, NULL, handle_client, &Connection[nmrConnections-1]);
+            Connection = (int*)realloc(Connection, ++nmrConnections * sizeof(int));
+            //close(cliSock);
         }
     }
 }
