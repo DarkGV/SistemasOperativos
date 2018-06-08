@@ -26,14 +26,15 @@ void* flags (void* pipe);
 int main()
 {
     pthread_t thread, fofi;
-    int fd, n, archived = 0, aux1, pipe, pepi, log, n1;
+    int fd, n, archived = 0, aux1, pipe, pepi, rep, log, n1, alloc, sv = 0;
+    long int success = 0;
     char name[150], aux[50], buff[7], aux2[512];
-    char * FIFO = "cachimbo", *FOFI = "pipeta";
+    char * FIFO = "cachimbo", *FOFI = "pipeta", *REP = "reports";
 
     mkfifo(FIFO,0666);
     mkfifo(FOFI,0666);
-    pthread_create(&thread, NULL, create_listener, NULL);
-
+    mkfifo(REP, 0666);
+    success = pthread_create(&thread, NULL, create_listener, NULL);
     pipe = open (FIFO, O_RDONLY);
 	if (pipe < 0)
 	{
@@ -46,42 +47,84 @@ int main()
 		printf("Couldn't open fifo\n");
 		return -1;
 	}
+	rep = open(REP, O_WRONLY);
+	if (rep < 0)
+	{
+		printf("Couldn't open fifo\n");
+		return -1;
+	}
+	if (success == 0)
+	{
+		alloc = 1;
+		write (rep, "Listener success\n",17);
+	}
 	pthread_create(&fofi, NULL, flags, &pipe);
     while(1){
+    	if (sv == 0 && flag != 1)
+    		continue; 
     	if (work == 1) {
     		work = 0;
-    		if (flag == 1)
-    			;
-    		else if (flag == 2) {
+    		if (flag == 2) {
     			received = 0;
     			archived = 0;
-    			//MATAR CLIENTES PUTA QUE OS PARIU
-    			work = 1;
+    			nmrConnections = 0;
+    			Connection = NULL;
+    			if (alloc == 1) {
+    				success = pthread_cancel(thread);
+	    			if (success == 0) {
+	    				alloc = 0;
+	    				write(rep, "All connections died\n",21);
+	    			}
+	    		}
+    			sv = 0;
     			continue;
     		}
     		else if (flag == 3) {
     			received = 0;
     			archived = 0;
-    			//MATAR CLIENTES PUTA QUE OS PARIU
+    			nmrConnections = 0;
+    			Connection = NULL;
+    			if (alloc == 1) {
+    				success = pthread_cancel(thread);
+					if (success == 0) {
+						alloc = 0;
+						write(rep, "All connections died\n",21);
+					}
+				}
+    			if (alloc == 0) {
+    				success = pthread_create(&thread, NULL, create_listener, NULL);
+	    			if (success == 0)
+					{
+						alloc = 1;
+						write (rep, "Listener success\n",17);
+					}
+				}
     		}
     		else if (flag == 4){
-    			work = 1;
+    			sv = 0;
     			continue;
     		} 
     		else if (flag == 5){
-    			//NUMERO CLIENTES
+    			printf("OLA1\n");
+    			itoa ((nmrConnections-1), aux);
+    			printf("OLA2\n");
+    			lseek(pepi, 0, SEEK_SET);
+    			printf("OLA3\n");
+    			write(pepi, aux, 4);
+    			printf("OLA4\n");
     		}
     		else if (flag == 6){
-    			//MATAR UM CLIENTE ESPECIFICO
+    			read(pipe, aux, 4);
+    			n = atoi(aux);
+    			Connection[n-1] = -1;
     		}
     		else if (flag == 7){
-    			//REPORTS
     		}
     		else if (flag == 8){
     			log = open ("Data.log", O_RDWR);
     			if (log < 0) {
 					printf("Error opening Data.log\n");
-					return ;
+					return -1;
 				}
 				while ( (n1=read (log, aux2, 512)) > 0 )
 					if (write(pepi, aux2, n1) < 0) {
@@ -90,15 +133,25 @@ int main()
 					}
 				close(log);
     		}
+    		else if (flag == 1) {
+    			if (alloc == 0) {
+    				success = pthread_create(&thread, NULL, create_listener, NULL);
+    				if (success == 0)
+					{
+						alloc = 1;
+						write (rep, "Listener success\n",17);
+					}
+    			}
+    			sv = 1;
+    		}
     	}
-    	printf("%d\n", nmrConnections);
-    	printf("WAITING...\n");
+    	printf("ESPERA...ESPERA...\n");
     	name[0] = '\0';
-        printf("RECEIVED %d\n", received);
-        if (received != 0){
+        if (received != 0){    	
         	itoa ((received-1), aux);
         	strcat(name, "Received");
         	strcat(name, aux);
+        	write (rep, name, 12);
         	strcat(name, ".log");
         	fd = open (name, O_RDONLY);
         	if (fd < 0)
@@ -131,6 +184,7 @@ int main()
     }
     close(pepi);
     close(pipe);
+    close(rep);
 }
 
 void itoa (int a, char* num) {
@@ -155,7 +209,7 @@ void handleRequest (int fd) {
 
 void handleLogging (int fd, int *archived) {
 	int log, n;
-	char buff[256], aux[256];
+	char buff[256];
 
 	/*ABRIR O FICHEIRO ONDE TAO OS LOGS*/
 	log = open ("Data.log", O_RDWR);
@@ -168,14 +222,10 @@ void handleLogging (int fd, int *archived) {
 	lseek(fd, 7, SEEK_SET);
 	
 	while ((n = read(fd, buff, 256)) < 0) {
-		if ( write (log, buff, n)) {
+		if (write (log, buff, n) < 0) {
 			printf("Error writing to file\n");
 			return ;
 		}
-	}
-	if ( write (log , "\n", 1) < 0) {
-		printf("Error writing to file\n");
-			return ;
 	}
 	(*archived)++;
 	close (log);
@@ -185,7 +235,6 @@ void handleLogging (int fd, int *archived) {
 
 void* flags (void* pipe) {
 	int pip = * (int*) pipe;
-	printf("%d\n", pip);
 	char aux[256];
 	while (threading) {
 		read(pip, aux, 256);
@@ -222,4 +271,5 @@ void* flags (void* pipe) {
 			work = 1;
 		}
 	}
+	return pipe;
 }

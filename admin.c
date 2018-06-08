@@ -19,13 +19,16 @@ void menuA ();
 
 int testPW ();
 
+void itoa (int a, char* num);
+
 void sendtofifo (int FIFO, char* s);
 
 int main () {
-	int fd, pepi, opt = 9, opt2 = 9,n;
-	char * FIFO = "cachimbo", *FOFI = "pipeta", aux[512];
+	int fd, pepi, rep, opt = 9, opt2 = 9,n;
+	char * FIFO = "cachimbo", *FOFI = "pipeta", *REP = "reports", aux[512];
 	mkfifo (FIFO,0666);
 	mkfifo (FOFI,0666);
+	mkfifo (REP, 0666);
 	fd = open (FIFO, O_WRONLY);
 	if (fd < 0)
 	{
@@ -34,6 +37,12 @@ int main () {
 	}
 	pepi = open (FOFI, O_RDONLY);
 	if (pepi < 0)
+	{
+		printf("Couldn't open fifo\n");
+		return -1;
+	}
+	rep = open (REP, O_RDONLY);
+	if (rep < 0)
 	{
 		printf("Couldn't open fifo\n");
 		return -1;
@@ -63,8 +72,13 @@ int main () {
 						case 4: sendtofifo(fd, "pause");
 								break;
 						case 5: sendtofifo(fd, "numc");
+								read(pepi, aux, 4);
+								printf("Number of clients: %d\n", atoi(aux));
 								break;
 						case 6: sendtofifo(fd, "terc");
+								scanf("%d", &n);
+								itoa(n, aux);
+								sendtofifo(fd, aux);
 								break;
 						default: opt2=9;
 					}
@@ -74,20 +88,40 @@ int main () {
 					scanf("%d", &opt2);
 					switch (opt2) {
 						case 1: sendtofifo(fd, "report");
+								while (1) {
+									n = read(rep, aux, 512);
+									if (n < 0)
+										break;
+									write(STDOUT_FILENO, aux, n);
+									if (n < 512)
+										break;
+								}
 								break;
 						case 2: sendtofifo(fd, "access");
-								printf("OLA88\n");
-								while ((n=read(pepi, aux, 512)) > 0)
+								n = 0;
+								while (1) {
+									n = read(pepi, aux, 512);
+									if (n < 0)
+										break;
 									write(STDOUT_FILENO, aux, n);
+									if(n < 512)
+										break;
+								}
 								printf("FODASSE\n");
+								close(pepi);
+								pepi = open (FOFI, O_RDONLY);
+								if (pepi < 0)
+								{
+									printf("Couldn't open fifo\n");
+									return -1;
+								}
+								printf("CONA\n");
 								break;
-						default: exit(0);
+						default: opt2=9;
 					}
-					printf("SAI DO PRIMEIRO SWITCH\n");
 					break;
 			default: exit(0);
 		}
-		printf("SAI DO SEGUNDO SWITCH\n");
 	}
 	close(pepi);
 	close(fd);
@@ -155,6 +189,21 @@ int testPW () {
 	pwtimeout += 300;
 	close (fd);
 	return 1;
+}
+
+void itoa (int a, char* num) {
+	int aux = a, i;
+	for (i=0; i<50; i++)
+		num[i] = '\0';
+	i = 0;
+	while ((aux % 10)) {
+		if (i >= 50)
+			return ;
+		num[i] = (char) ((aux % 10) + 48);
+		aux = aux / 10;
+		i++;
+	}
+	return ;
 }
 
 void sendtofifo (int FIFO, char* s) {
