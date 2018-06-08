@@ -40,7 +40,6 @@ void* handle_client(void*args){
     }
     if(nBytes < 0) printf("Error receiving file\n");
     else received++;
-    printf("I am %d", nmrConnections);
     close(cliSock);
     return NULL;
 }

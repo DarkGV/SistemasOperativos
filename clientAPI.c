@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 //#include <openssl/aes.h>
+#include <sys/types.h>
 #include "clientAPI.h"
 
 #define MAXBUFFSIZE 1024
@@ -18,9 +19,12 @@ int createLogFile(char* logName ,char* data, int logLevel){
 	int fd = creat(logName, S_IRWXU);
 
 	LogFile myLog;
-
+	
 	myLog.pid = getppid();
 	char buffer[1024];
+	sprintf(buffer, "%s\n", "Logging");
+	if(write(fd, buffer, strlen(buffer)) < 0) return -1;
+	
 	sprintf(buffer, "%d\n", myLog.pid);
 	if(write(fd, buffer, strlen(buffer)) < 0) return -1;
 

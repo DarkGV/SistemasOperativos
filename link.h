@@ -12,6 +12,7 @@
 #include <time.h>
 #include <sys/mman.h>
 #include <sys/shm.h>
+#include <signal.h>
 
 typedef struct{
     pid_t PID;
